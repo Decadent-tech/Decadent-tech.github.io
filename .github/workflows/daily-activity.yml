@@ -1,0 +1,34 @@
+name: Daily Activity
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight UTC
+  workflow_dispatch:       # Allows manual trigger too
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config user.name "Decadent-Tech"
+          git config user.email "debosmitac8@gmail.com"
+
+      - name: Update daily journal log
+        run: |
+          mkdir -p daily-log
+          echo "$(date '+%Y-%m-%d %H:%M:%S UTC') — Daily activity log entry" >> daily-log/journal.txt
+
+      - name: Update README timestamp
+        run: |
+          # Updates the last active line in README.md
+          sed -i "s/.*Last Active:.*/🟢 Last Active: $(date '+%B %d, %Y')/" index.html
+      - name: Commit and push changes
+        run: |
+          git add daily-log/journal.txt index.html
+          git diff --staged --quiet || git commit -m "🗓️ Daily activity update — $(date '+%Y-%m-%d')"
+          git push
